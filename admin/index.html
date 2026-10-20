@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en" translate="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google" content="notranslate" />
+  <title>Energy Solution - Admin Panel</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  #btnQuickCreateReport {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+</style>
+
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Login Overlay -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="brand-logo">⚡</div>
+        <div>
+          <h2>ENERGY SOLUTION</h2>
+          <p class="brand-tagline">Admin Control Center</p>
+        </div>
+      </div>
+      
+      <div class="login-header">
+        <h3>Sign In to Dashboard</h3>
+        <p>Enter your administrator credentials to continue</p>
+      </div>
+
+      <form id="loginForm" class="auth-form" onsubmit="return false;">
+        <div class="form-group">
+          <label for="loginEmail">EMAIL ADDRESS</label>
+          <input type="email" id="loginEmail" placeholder="admin@example.com" required autocomplete="email" />
+        </div>
+
+        <div class="form-group">
+          <label for="loginPassword">PASSWORD</label>
+          <div class="password-input-wrap">
+            <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password" />
+            <button type="button" class="btn-toggle-pw" onclick="togglePasswordVisibility('loginPassword', this)">Show</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="apiUrlInput">API ROOT URL</label>
+          <input type="url" id="apiUrlInput" value="https://brocode.fun/api" placeholder="https://brocode.fun/api" />
+          <small class="helper-text">Change only if using local or alternative API server</small>
+        </div>
+
+        <div id="loginError" class="alert-box error hidden"></div>
+
+        <button type="submit" id="btnLoginSubmit" class="btn btn-primary btn-block">
+          <span class="btn-text">Sign In as Admin</span>
+          <span class="spinner hidden"></span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main App Shell -->
+  <div id="appShell" class="app-layout hidden">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-badge">⚡</div>
+        <div class="brand-info">
+          <span class="brand-title">ENERGY SOLUTION</span>
+          <span class="brand-sub">ADMIN CONSOLE</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-tab="dashboard">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Dashboard</span>
+        </button>
+        <button class="nav-item" data-tab="reports">
+          <span class="nav-icon">📄</span>
+          <span class="nav-label">Oil Reports</span>
+          <span id="badgeReportsCount" class="nav-badge">0</span>
+        </button>
+        <button class="nav-item" data-tab="users">
+          <span class="nav-icon">👥</span>
+          <span class="nav-label">Users & Customers</span>
+          <span id="badgeUsersCount" class="nav-badge">0</span>
+        </button>
+        <button class="nav-item" data-tab="settings">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">Admin Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="avatar" id="adminAvatar">A</div>
+          <div class="user-meta">
+            <span class="user-name" id="sidebarAdminName">Administrator</span>
+            <span class="user-role-badge">ADMIN</span>
+          </div>
+        </div>
+        <button class="btn-logout" id="btnLogout" title="Sign Out">
+          🚪 <span>Sign Out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+      
+      <!-- Top Navbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-toggle" id="btnMobileToggle" aria-label="Toggle Navigation">☰</button>
+          <div class="breadcrumbs">
+            <span class="crumb-app">Admin</span>
+            <span class="crumb-separator">/</span>
+            <span class="crumb-current" id="currentPageTitle">Dashboard</span>
+          </div>
+        </div>
+        
+        <div class="topbar-right">
+          <button class="btn btn-outline btn-sm" id="btnGlobalRefresh" title="Refresh all data">
+            🔄 <span class="hide-mobile">Refresh Data</span>
+          </button>
+          <button class="btn btn-primary btn-sm" id="btnQuickCreateReport" onclick="window.location.href='create-report.html'">
+            🧪 <span class="hide-mobile">Create Report</span>
+          </button>
+          <button class="btn btn-primary btn-sm" id="btnQuickCreateUser">
+            ➕ <span class="hide-mobile">Create User</span>
+          </button>
+          <div class="profile-menu-wrap">
+            <button class="profile-btn" id="btnAdminProfileMenu">
+              <span class="admin-pill" id="topbarAdminEmail">admin@energysolution.com</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Body -->
+      <main class="page-container">
+
+        <!-- ================= TAB: DASHBOARD ================= -->
+        <section id="tab-dashboard" class="tab-pane active">
+          
+          <div class="welcome-banner">
+            <div class="welcome-text">
+              <h2>Welcome back, <span id="dashAdminName">Administrator</span>! 👋</h2>
+              <p>Manage generated oil reports, user accounts, report assignments, and account security from this dashboard.</p>
+            </div>
+            <div class="welcome-actions">
+              <button class="btn btn-light btn-sm" onclick="switchTab('reports')">View All Reports →</button>
+            </div>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            
+            <div class="stat-card stat-primary" onclick="switchTab('reports')">
+              <div class="stat-icon-wrap">📋</div>
+              <div class="stat-info">
+                <span class="stat-label">TOTAL REPORTS GENERATED</span>
+                <span class="stat-value" id="statTotalReports">0</span>
+                <span class="stat-desc">All oil reports created in the system</span>
+              </div>
+            </div>
+
+            <div class="stat-card stat-success" onclick="switchTab('users')">
+              <div class="stat-icon-wrap">👥</div>
+              <div class="stat-info">
+                <span class="stat-label">TOTAL USERS / CUSTOMERS</span>
+                <span class="stat-value" id="statTotalUsers">0</span>
+                <span class="stat-desc">Registered customer accounts</span>
+              </div>
+            </div>
+
+            <div class="stat-card stat-info" onclick="filterReportsByStatus('assigned')">
+              <div class="stat-icon-wrap">✅</div>
+              <div class="stat-info">
+                <span class="stat-label">ASSIGNED REPORTS</span>
+                <span class="stat-value" id="statAssignedReports">0</span>
+                <span class="stat-desc">Reports assigned to customer accounts</span>
+              </div>
+            </div>
+
+            <div class="stat-card stat-warning" onclick="filterReportsByStatus('unassigned')">
+              <div class="stat-icon-wrap">⏳</div>
+              <div class="stat-info">
+                <span class="stat-label">UNASSIGNED REPORTS</span>
+                <span class="stat-value" id="statUnassignedReports">0</span>
+                <span class="stat-desc">Pending customer assignment</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Dashboard Quick Sections -->
+          <div class="dash-columns">
+            
+            <!-- Recent Reports Card -->
+            <div class="card recent-reports-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Recent Oil Reports</h3>
+                  <p class="card-subtitle">Recently generated oil reports</p>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="switchTab('reports')">View All</button>
+              </div>
+              <div class="card-body no-padding">
+                <div class="table-responsive">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th>SAMPLE ID</th>
+                        <th>CUSTOMER</th>
+                        <th>EQUIPMENT</th>
+                        <th>DATE</th>
+                        <th>STATUS</th>
+                        <th>ACTIONS</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dashRecentReportsBody">
+                      <tr>
+                        <td colspan="6" class="text-center text-muted py-4">Loading reports...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quick Action / Users Summary Card -->
+            <div class="card quick-actions-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Quick Actions</h3>
+                  <p class="card-subtitle">Fast administrative tasks</p>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="action-buttons-list">
+                  <button class="action-tile" onclick="openCreateUserModal()">
+                    <span class="tile-icon">➕</span>
+                    <div class="tile-content">
+                      <strong>Create New User</strong>
+                      <small>Create a new customer or user account</small>
+                    </div>
+                    <span class="tile-arrow">›</span>
+                  </button>
+
+                  <button class="action-tile" onclick="openChangePasswordModal()">
+                    <span class="tile-icon">🔑</span>
+                    <div class="tile-content">
+                      <strong>Change Admin Password</strong>
+                      <small>Update your administrator password</small>
+                    </div>
+                    <span class="tile-arrow">›</span>
+                  </button>
+
+                  <button class="action-tile" onclick="window.location.href='create-report.html'">
+                    <span class="tile-icon">🧪</span>
+                    <div class="tile-content">
+                      <strong>Create New Oil Report</strong>
+                      <small>Create an oil analysis report matching the mobile app</small>
+                    </div>
+                    <span class="tile-arrow">›</span>
+                  </button>
+
+                  <button class="action-tile" onclick="switchTab('reports')">
+                    <span class="tile-icon">📄</span>
+                    <div class="tile-content">
+                      <strong>Manage & Assign Reports</strong>
+                      <small>Assign or reassign a report to a customer</small>
+                    </div>
+                    <span class="tile-arrow">›</span>
+                  </button>
+
+                  <button class="action-tile" onclick="switchTab('settings')">
+                    <span class="tile-icon">⚙️</span>
+                    <div class="tile-content">
+                      <strong>API & System Config</strong>
+                      <small>API server connection & system info</small>
+                    </div>
+                    <span class="tile-arrow">›</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- ================= TAB: REPORTS ================= -->
+        <section id="tab-reports" class="tab-pane">
+          
+          <div class="section-top">
+            <div>
+              <h2 class="section-title">Oil Analysis Reports</h2>
+              <p class="section-desc">View generated reports, download PDFs, and manage report assignments.</p>
+            </div>
+            <div class="section-actions">
+              <button class="btn btn-primary" onclick="assignSelectedReports()">👤 Assign selected</button>
+              <button class="btn btn-outline" onclick="loadAllReports(true)">🔄 Refresh</button>
+            </div>
+          </div>
+
+          <!-- Filter & Search Bar -->
+          <div class="filter-bar">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="reportSearchInput" placeholder="Search by sample ID, customer, or equipment..." oninput="handleReportSearch()" />
+              <button id="btnClearReportSearch" class="btn-clear hidden" onclick="clearReportSearch()">✕</button>
+            </div>
+            
+            <div class="filter-controls">
+              <label for="reportStatusFilter" class="filter-label">Filter:</label>
+              <select id="reportStatusFilter" onchange="handleReportFilterChange()">
+                <option value="all">All Reports</option>
+                <option value="assigned">Assigned to User</option>
+                <option value="unassigned">Unassigned (Pending)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Reports Table -->
+          <div class="card">
+            <div class="card-body no-padding">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th><input id="selectAllReports" type="checkbox" aria-label="Select all visible reports" onchange="toggleAllVisibleReports(this.checked)" /></th>
+                      <th>#ID</th>
+                      <th>SAMPLE ID</th>
+                      <th>CUSTOMER</th>
+                      <th>EQUIPMENT</th>
+                      <th>REPORT DATE</th>
+                      <th>ASSIGNED TO</th>
+                      <th>ACTIONS</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reportsTableBody">
+                    <tr>
+                      <td colspan="7" class="text-center text-muted py-4">Loading reports...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span id="reportsTableCount" class="footer-count">Showing 0 reports</span>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ================= TAB: USERS ================= -->
+        <section id="tab-users" class="tab-pane">
+          
+          <div class="section-top">
+            <div>
+              <h2 class="section-title">Users & Customers</h2>
+              <p class="section-desc">View registered customers and administrators, and create new user accounts.</p>
+            </div>
+            <div class="section-actions">
+              <button class="btn btn-outline" onclick="loadAllUsers(true)">🔄 Refresh</button>
+              <button class="btn btn-primary" onclick="openCreateUserModal()">➕ Create New User</button>
+            </div>
+          </div>
+
+          <!-- Filter & Search Bar -->
+          <div class="filter-bar">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="userSearchInput" placeholder="Search by name, email, or role..." oninput="handleUserSearch()" />
+              <button id="btnClearUserSearch" class="btn-clear hidden" onclick="clearUserSearch()">✕</button>
+            </div>
+
+            <div class="filter-controls">
+              <label for="userRoleFilter" class="filter-label">Role:</label>
+              <select id="userRoleFilter" onchange="handleUserSearch()">
+                <option value="all">All Roles</option>
+                <option value="user">Customers Only</option>
+                <option value="admin">Admins Only</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Users Table -->
+          <div class="card">
+            <div class="card-body no-padding">
+              <div class="table-responsive">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>#ID</th>
+                      <th>FULL NAME</th>
+                      <th>EMAIL ADDRESS</th>
+                      <th>ROLE</th>
+                      <th>ASSIGNED REPORTS</th>
+                      <th>ACTIONS</th>
+                    </tr>
+                  </thead>
+                  <tbody id="usersTableBody">
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-4">Loading users...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card-footer">
+              <span id="usersTableCount" class="footer-count">Showing 0 users</span>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- ================= TAB: SETTINGS ================= -->
+        <section id="tab-settings" class="tab-pane">
+          
+          <div class="section-top">
+            <div>
+              <h2 class="section-title">Admin Account & System Settings</h2>
+              <p class="section-desc">Update administrator security settings and manage the API server configuration.</p>
+            </div>
+          </div>
+
+          <div class="settings-grid">
+            
+            <!-- Password Change Card -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Change Admin Password</h3>
+                  <p class="card-subtitle">Set a new password for your administrator account</p>
+                </div>
+              </div>
+              <div class="card-body">
+                <form id="settingsChangePasswordForm" onsubmit="handleSettingsChangePassword(event)">
+                  <div class="form-group">
+                    <label for="settingsCurrentEmail">ADMIN EMAIL</label>
+                    <input type="email" id="settingsCurrentEmail" readonly class="input-readonly" />
+                  </div>
+
+                  <div class="form-group">
+                    <label for="settingsNewPassword">NEW PASSWORD</label>
+                    <div class="password-input-wrap">
+                      <input type="password" id="settingsNewPassword" placeholder="Minimum 6 characters" required minlength="6" />
+                      <button type="button" class="btn-toggle-pw" onclick="togglePasswordVisibility('settingsNewPassword', this)">Show</button>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="settingsConfirmPassword">CONFIRM NEW PASSWORD</label>
+                    <div class="password-input-wrap">
+                      <input type="password" id="settingsConfirmPassword" placeholder="Confirm password" required minlength="6" />
+                      <button type="button" class="btn-toggle-pw" onclick="togglePasswordVisibility('settingsConfirmPassword', this)">Show</button>
+                    </div>
+                  </div>
+
+                  <button type="submit" id="btnSaveNewPassword" class="btn btn-primary">
+                    <span class="btn-text">Update Admin Password</span>
+                    <span class="spinner hidden"></span>
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- API Configuration Card -->
+            <div class="card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">API Server Configuration</h3>
+                  <p class="card-subtitle">Backend connection details and server endpoints</p>
+                </div>
+              </div>
+              <div class="card-body">
+                <form id="settingsApiForm" onsubmit="handleSaveApiUrl(event)">
+                  <div class="form-group">
+                    <label for="settingsApiUrl">API BASE URL</label>
+                    <input type="url" id="settingsApiUrl" required />
+                    <small class="helper-text">Default: <code>https://brocode.fun/api</code></small>
+                  </div>
+
+                  <div class="api-status-info mb-3">
+                    <div class="status-row">
+                      <span>Connection Status:</span>
+                      <strong id="apiConnectionStatus" class="badge badge-success">Connected</strong>
+                    </div>
+                    <div class="status-row">
+                      <span>Endpoints used:</span>
+                      <code>/oil_reports.php</code>, <code>/login.php</code>
+                    </div>
+                  </div>
+
+                  <div class="btn-row">
+                    <button type="button" class="btn btn-outline" onclick="testApiConnection()">⚡ Test Connection</button>
+                    <button type="submit" class="btn btn-secondary">Save URL</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+          </div>
+
+        </section>
+
+      </main>
+
+      <footer class="app-footer">
+        <p>ENERGY SOLUTION &middot; CLEANER ENERGY, SMARTER LIVING &middot; ADMIN CONSOLE v2.0</p>
+      </footer>
+
+    </div>
+
+  </div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Modal: Create New User -->
+  <div id="modalCreateUser" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Create New User Account</h3>
+        <button class="btn-close" onclick="closeModal('modalCreateUser')">✕</button>
+      </div>
+      <form id="createUserForm" onsubmit="handleCreateUser(event)">
+        <div class="modal-body">
+          <p class="modal-sub">Enter the details for the new user or customer account:</p>
+          
+          <div class="form-group">
+            <label for="createUserName">FULL NAME *</label>
+            <input type="text" id="createUserName" placeholder="e.g. Anand Pandey" required />
+          </div>
+
+          <div class="form-group">
+            <label for="createUserEmail">EMAIL ADDRESS *</label>
+            <input type="email" id="createUserEmail" placeholder="user@example.com" required />
+          </div>
+
+          <div class="form-group">
+            <label for="createUserPassword">INITIAL PASSWORD *</label>
+            <div class="password-input-wrap">
+              <input type="password" id="createUserPassword" placeholder="Minimum 4 characters" required minlength="4" />
+              <button type="button" class="btn-toggle-pw" onclick="togglePasswordVisibility('createUserPassword', this)">Show</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="createUserRole">ACCOUNT ROLE *</label>
+            <select id="createUserRole" required>
+              <option value="user" selected>Customer / User (Normal Access)</option>
+              <option value="admin">Administrator (Full Admin Access)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalCreateUser')">Cancel</button>
+          <button type="submit" id="btnSubmitCreateUser" class="btn btn-primary">
+            <span class="btn-text">Create Account</span>
+            <span class="spinner hidden"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Assign Report -->
+  <div id="modalAssignReport" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="assignModalTitle">Assign Report to Customer</h3>
+        <button class="btn-close" onclick="closeModal('modalAssignReport')">✕</button>
+      </div>
+      <form id="assignReportForm" onsubmit="handleAssignReport(event)">
+        <div class="modal-body">
+          <input type="hidden" id="assignReportId" />
+          <input type="hidden" id="assignReportIds" />
+          
+          <div class="assign-report-summary mb-3">
+            <p><strong>Sample ID:</strong> <span id="assignModalSampleId">-</span></p>
+            <p><strong>Customer:</strong> <span id="assignModalCustomer">-</span></p>
+            <p><strong>Equipment:</strong> <span id="assignModalEquipment">-</span></p>
+          </div>
+
+          <div class="form-group">
+            <label for="assignUserSearch">SEARCH CUSTOMER</label>
+            <input type="search" id="assignUserSearch" placeholder="Type a name or email" oninput="handleAssignUserSearch()" />
+          </div>
+
+          <div class="form-group">
+            <label for="assignSelectUser">SELECT CUSTOMER ACCOUNT *</label>
+            <select id="assignSelectUser" required>
+              <option value="">-- Choose Customer --</option>
+            </select>
+            <small class="helper-text">The report will appear in this user's mobile app portal after assignment.</small>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalAssignReport')">Cancel</button>
+          <button type="submit" id="btnSubmitAssign" class="btn btn-primary">
+            <span class="btn-text">Assign Report</span>
+            <span class="spinner hidden"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: View Report Details -->
+  <div id="modalReportDetails" class="modal-overlay hidden">
+    <div class="modal-card modal-lg">
+      <div class="modal-header">
+        <div>
+          <h3 id="detailReportTitle">Report Details</h3>
+          <p id="detailReportSub" class="modal-sub">Sample Information & Test Results</p>
+        </div>
+        <button class="btn-close" onclick="closeModal('modalReportDetails')">✕</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Summary Cards -->
+        <div class="details-top-grid">
+          <div class="detail-box">
+            <span class="detail-label">SAMPLE ID</span>
+            <strong id="detSampleId" class="detail-val">-</strong>
+          </div>
+          <div class="detail-box">
+            <span class="detail-label">CUSTOMER</span>
+            <strong id="detCustomer" class="detail-val">-</strong>
+          </div>
+          <div class="detail-box">
+            <span class="detail-label">EQUIPMENT</span>
+            <strong id="detEquipment" class="detail-val">-</strong>
+          </div>
+          <div class="detail-box">
+            <span class="detail-label">REPORT DATE</span>
+            <strong id="detReportDate" class="detail-val">-</strong>
+          </div>
+        </div>
+
+        <!-- Secondary Info -->
+        <div class="details-meta-grid">
+          <div><span>Site:</span> <strong id="detSite">-</strong></div>
+          <div><span>Lubricant:</span> <strong id="detLubricant">-</strong></div>
+          <div><span>Component:</span> <strong id="detComponent">-</strong></div>
+          <div><span>Running Hours:</span> <strong id="detRunningHours">-</strong></div>
+          <div><span>Sample Date:</span> <strong id="detSampleDate">-</strong></div>
+          <div><span>Received Date:</span> <strong id="detReceivedDate">-</strong></div>
+          <div><span>Lubricant Condition:</span> <span id="detLubeCondition" class="badge">-</span></div>
+          <div><span>Wear Condition:</span> <span id="detWearCondition" class="badge">-</span></div>
+          <div><span>Assigned Customer:</span> <span id="detAssignee" class="badge badge-info">-</span></div>
+        </div>
+
+        <!-- Recommendations -->
+        <div class="detail-section">
+          <h4>RECOMMENDATION & FINDINGS</h4>
+          <div id="detRecommendation" class="recommendation-box">No recommendation provided.</div>
+        </div>
+
+        <!-- Test Results Table -->
+        <div class="detail-section">
+          <h4>TEST RESULTS & PARAMETERS</h4>
+          <div class="table-responsive">
+            <table class="data-table detail-table">
+              <thead>
+                <tr>
+                  <th>PARAMETER</th>
+                  <th>RESULT VALUE</th>
+                </tr>
+              </thead>
+              <tbody id="detResultsTableBody">
+                <tr><td colspan="2" class="text-center text-muted">No test results data</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" onclick="closeModal('modalReportDetails')">Close</button>
+        <button type="button" class="btn btn-success" id="btnDownloadDetailPdf">
+          📥 Download PDF Report
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: PDF Viewer -->
+  <div id="modalPdfViewer" class="modal-overlay hidden">
+    <div class="modal-card modal-xl">
+      <div class="modal-header">
+        <h3 id="pdfViewerTitle">PDF Viewer</h3>
+        <div class="modal-header-actions">
+          <button class="btn btn-sm btn-success" id="btnPdfDownloadDirect">📥 Download</button>
+          <button class="btn-close" onclick="closeModal('modalPdfViewer')">✕</button>
+        </div>
+      </div>
+      <div class="modal-body modal-pdf-body">
+        <iframe id="pdfViewerFrame" class="pdf-frame" title="Report PDF Preview"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Change Password Quick -->
+  <div id="modalChangePassword" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Change Admin Password</h3>
+        <button class="btn-close" onclick="closeModal('modalChangePassword')">✕</button>
+      </div>
+      <form id="quickChangePasswordForm" onsubmit="handleQuickChangePassword(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="quickNewPassword">NEW PASSWORD *</label>
+            <div class="password-input-wrap">
+              <input type="password" id="quickNewPassword" placeholder="Minimum 6 characters" required minlength="6" />
+              <button type="button" class="btn-toggle-pw" onclick="togglePasswordVisibility('quickNewPassword', this)">Show</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="quickConfirmPassword">CONFIRM NEW PASSWORD *</label>
+            <div class="password-input-wrap">
+              <input type="password" id="quickConfirmPassword" placeholder="Confirm password" required minlength="6" />
+              <button type="button" class="btn-toggle-pw" onclick="togglePasswordVisibility('quickConfirmPassword', this)">Show</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" onclick="closeModal('modalChangePassword')">Cancel</button>
+          <button type="submit" id="btnSubmitQuickPw" class="btn btn-primary">
+            <span class="btn-text">Update Password</span>
+            <span class="spinner hidden"></span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js?v=20261002-bulk-assign"></script>
+</body>
+</html>

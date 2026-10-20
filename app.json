@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "Energy-solution",
+    "slug": "Energy-solution",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/energy-solution-icon.png",
+    "scheme": "energysolution",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "icon": "./assets/images/energy-solution-icon.png"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/images/energy-solution-adaptive.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anuragrai122.Energysolution"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/energy-solution-icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/images/energy-solution-icon.png",
+          "imageWidth": 240
+        }
+      ],
+      "expo-sharing",
+      "expo-asset",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Energy-solution to attach rubbing-wear images to oil reports.",
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "27016e05-a8aa-441e-84a2-31fbae4a2973"
+      }
+    }
+  }
+}

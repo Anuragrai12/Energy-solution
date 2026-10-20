@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Create Oil Analysis Report</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fb;color:#172b3a;font-family:Arial,Helvetica,sans-serif}
+.page-wrap{max-width:1400px;margin:0 auto;padding:24px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:18px}
+.topbar h1{margin:0;font-size:26px} .topbar p{margin:5px 0 0;color:#6b7b88}
+.card{background:#fff;border:1px solid #dfe6eb;border-radius:12px;margin-bottom:16px;box-shadow:0 2px 12px rgba(23,43,58,.05)}
+.card-head{padding:16px 18px;border-bottom:1px solid #e7edf1;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.card-head h2{margin:0;font-size:16px} .card-body{padding:18px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.field-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px}
+.field label{display:block;font-size:12px;font-weight:700;margin-bottom:6px;color:#34495a}
+.field input,.field select,.field textarea,.wear-row select{width:100%;border:1px solid #cbd5dd;border-radius:7px;padding:10px 11px;background:#fff;color:#172b3a}
+.field textarea{min-height:95px;resize:vertical}
+.hint{font-weight:400;color:#8795a3;font-size:10px;display:block;margin-top:2px}
+.form-section{border:1px solid #dfe6eb;border-radius:9px;margin-bottom:14px;overflow:hidden}
+.form-section-title{font-size:13px;font-weight:700;text-align:center;padding:8px;background:#edf4f0;border-bottom:1px solid #dfe6eb}
+.wear-group{border:1px solid #dfe6eb;border-radius:9px;overflow:hidden;margin-bottom:14px}
+.wear-group-title{font-weight:700;font-size:12px;background:#f3f3f3;padding:8px}
+.wear-row{display:flex;gap:12px;align-items:center;padding:8px 10px;border-top:1px solid #edf0f2;font-size:12px}.wear-row>input{flex:1;min-width:0}.wear-row>select{width:140px;flex-shrink:0}
+.actions{display:flex;gap:9px;flex-wrap:wrap}
+button{border:0;border-radius:8px;padding:10px 15px;font-weight:700;cursor:pointer}
+.btn-primary{background:#2563eb;color:#fff} .btn-secondary{background:#e9eef2;color:#172b3a}
+.btn-success{background:#3f8f4f;color:#fff}
+.notice{background:#eef6ff;border:1px solid #cfe2ff;color:#1e4f88;padding:12px 14px;border-radius:9px;margin-bottom:16px;font-size:13px}
+.preview{width:100%;height:1000px;border:1px solid #cbd5dd;border-radius:9px;background:#fff}
+.hidden{display:none}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.page-wrap{padding:16px;max-width:1500px}
+.topbar{position:sticky;top:0;z-index:5;background:#f5f7fb;padding:10px 0;box-shadow:0 5px 12px rgba(23,43,58,.06)}
+.card{margin-bottom:10px}
+details.card>summary{list-style:none;cursor:pointer;position:relative;padding-right:42px}
+details.card>summary::-webkit-details-marker{display:none}
+details.card>summary::after{content:'+';position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:22px;color:#587080}
+details.card[open]>summary::after{content:'−'}
+.field-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;padding:10px}
+.field-grid .field input{padding:8px 9px}
+.wear-group{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+.wear-group-title{grid-column:1/-1}
+.wear-row{padding:6px 8px}
+.section-nav{position:sticky;top:72px;z-index:4;display:flex;gap:7px;overflow-x:auto;padding:8px 0;background:#f5f7fb}
+.section-nav button{flex:0 0 auto;padding:8px 11px;background:#e9eef2;color:#263f50;font-size:12px}
+.section-nav button:hover,.section-nav button:focus{background:#d9e8f8}
+input:focus,select:focus,textarea:focus{outline:2px solid #78a9ff;outline-offset:1px}
+input[aria-invalid="true"],select[aria-invalid="true"]{border-color:#c73c3c;background:#fff8f8}
+@media(max-width:950px){.grid,.field-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:650px){.grid,.field-grid,.two-col{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}.wear-row{grid-template-columns:1fr}}
+@media(max-width:650px){.topbar{position:static}.wear-group{grid-template-columns:1fr}.wear-group-title{grid-column:auto}}
+@media(max-width:650px){.section-nav{top:0}}
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <div class="topbar">
+    <div>
+      <h1>Create Oil Analysis Report</h1>
+      <p>Report template is kept exactly the same as the mobile-app report.</p>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="location.href='index.html'">← Admin Panel</button>
+      <button class="btn-primary" id="generateButton" onclick="generateExactReport()">📄 Generate & Save PDF</button>
+    </div>
+  </div>
+
+  <div class="notice" id="reportNotice">Fill in the report details, then generate a PDF. The report will be saved to the admin dashboard and remain unassigned until you assign it.</div>
+  <nav class="section-nav" aria-label="Report form sections">
+    <button type="button" data-section="0">Details</button>
+    <button type="button" data-section="1">Recommendations</button>
+    <button type="button" data-section="2">Oil test</button>
+    <button type="button" data-section="3">Ferrography</button>
+    <button type="button" data-section="4">Wear</button>
+    <button type="button" data-section="5">Trends</button>
+    <button type="button" data-section="6">Image</button>
+  </nav>
+
+  <section class="card">
+    <div class="card-head"><h2>Report Information</h2></div>
+    <div class="card-body">
+      <div class="grid">
+        <div class="field"><label>REPORT NAME</label><input id="reportName" value="OIL ANALYSIS TEST REPORT"></div>
+        <div class="field"><label>CUSTOMER</label><input id="customer"></div>
+        <div class="field"><label>SAMPLE ID *</label><input id="sampleId"></div>
+        <div class="field"><label>EQUIPMENT *</label><input id="equipment"></div>
+        <div class="field"><label>LUBRICANT</label><input id="lubricant"></div>
+        <div class="field"><label>COMPONENT</label><input id="component"></div>
+        <div class="field"><label>RESERVOIR</label><input id="reservoir"></div>
+        <div class="field"><label>RUNNING HOURS</label><input id="runningHours"></div>
+        <div class="field"><label>AREA / SITE</label><input id="site"></div>
+        <div class="field"><label>SAMPLE DATE</label><input id="sampleDate" type="date"></div>
+        <div class="field"><label>RECEIVED DATE</label><input id="receivedDate" type="date"></div>
+        <div class="field"><label>REPORT DATE</label><input id="reportDate" type="date"></div>
+        <div class="field"><label>LUBRICANT CONDITION</label>
+          <select id="lubricantCondition"><option value="">Not set</option><option>Normal</option><option>Monitor</option><option>Critical</option></select>
+        </div>
+        <div class="field"><label>MACHINE CONDITION</label>
+          <select id="wearCondition"><option value="">Not set</option><option>Normal</option><option>Monitor</option><option>Critical</option></select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Recommendations</h2></div>
+    <div class="card-body">
+      <div class="field"><textarea id="recommendation" placeholder="Recommendations..."></textarea></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Oil Analysis Results</h2></div>
+    <div class="card-body">
+      
+      <div class="form-section">
+        <div class="form-section-title">TEST REPORT</div>
+        <div class="field-grid">
+          <div class="field">
+            <label>Viscosity @ 40 °C <span class="hint">cSt · ASTM D445</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_vis40" type="text" placeholder="Limit" value="288 - 352" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_vis40" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Viscosity @ 100 °C <span class="hint">cSt · ASTM D445</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_vis100" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_vis100" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Viscosity Index <span class="hint">- · ASTM D2270</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_visIndex" type="text" placeholder="Limit" value="&gt;95" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_visIndex" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Acid Number <span class="hint">mg KOH/g · ASTM D664</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_acid" type="text" placeholder="Limit" value="&lt;1.5" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_acid" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div></div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">CONTAMINATION</div>
+        <div class="field-grid">
+          <div class="field">
+            <label>Particle Count / 1 ml <span class="hint">ISO code · ISO 4406</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_iso" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_iso" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Particles &gt;4 µm(c) <span class="hint">count/ml · ISO 4406</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_particle4" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_particle4" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Particles &gt;6 µm(c) <span class="hint">count/ml · ISO 4406</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_particle6" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_particle6" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Particles &gt;14 µm(c) <span class="hint">count/ml · ISO 4406</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_particle14" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_particle14" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Particle Count / NAS <span class="hint">class · NAS 1638</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_nas" type="text" placeholder="Limit" value="&lt;10" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_nas" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Moisture Content <span class="hint">ppm · ASTM E203</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_moisture" type="text" placeholder="Limit" value="&lt;500" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_moisture" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div></div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">ELEMENTAL CONTAMINATION / MACHINE CONDITION</div>
+        <div class="field-grid">
+          <div class="field">
+            <label>Iron, Fe <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_iron" type="text" placeholder="Limit" value="&lt;150" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_iron" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Chromium, Cr <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_chromium" type="text" placeholder="Limit" value="&lt;10" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_chromium" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Tin, Sn <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_tin" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_tin" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Aluminium, Al <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_aluminum" type="text" placeholder="Limit" value="&lt;20" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_aluminum" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Nickel, Ni <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_nickel" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_nickel" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Copper, Cu <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_copper" type="text" placeholder="Limit" value="&lt;50" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_copper" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Silver, Ag <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_silver" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_silver" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Titanium, Ti <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_titanium" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_titanium" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Cadmium, Cd <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_cadmium" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_cadmium" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Manganese, Mn <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_manganese" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_manganese" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Lead, Pb <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_lead" type="text" placeholder="Limit" value="&lt;50" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_lead" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Molybdenum, Mo <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_molybdenum" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_molybdenum" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Vanadium, V <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_vanadium" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_vanadium" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Silicon, Si <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_silicon" type="text" placeholder="Limit" value="&lt;30" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_silicon" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Sodium, Na <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_sodium" type="text" placeholder="Limit" value="&lt;50" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_sodium" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div></div>
+      </div>
+      <div class="form-section">
+        <div class="form-section-title">ADDITIVES</div>
+        <div class="field-grid">
+          <div class="field">
+            <label>Calcium, Ca <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_calcium" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_calcium" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Magnesium, Mg <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_magnesium" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_magnesium" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Boron, B <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_boron" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_boron" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Zinc, Zn <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_zinc" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_zinc" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Phosphorus, P <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_phosphorus" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_phosphorus" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Potassium, K <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_potassium" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_potassium" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Barium, Ba <span class="hint">ppm · ASTM D6595</span></label>
+            <div style="display: flex; gap: 8px;">
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Limit</span>
+                <input id="l_barium" type="text" placeholder="Limit" value="-" autocomplete="off">
+              </div>
+              <div style="flex:1">
+                <span class="hint" style="margin-top:0; margin-bottom:4px">Result</span>
+                <input id="r_barium" type="text" placeholder="-" autocomplete="off">
+              </div>
+            </div>
+          </div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Direct Reading Ferrography</h2></div>
+    <div class="card-body">
+      <div class="grid">
+        <div class="field"><label>WPC</label><input id="wpc"></div>
+        <div class="field"><label>DL</label><input id="dl"></div>
+        <div class="field"><label>DS</label><input id="ds"></div>
+        <div class="field"><label>PLP</label><input id="plp"></div>
+        <div class="field"><label>ALLOWABLE WPC LIMIT</label><input id="allowableWpc"></div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="two-col">
+        <div class="field"><label>DISCUSSION OF RESULTS</label><textarea id="ferrographyDiscussion"></textarea></div>
+        <div class="field"><label>WEAR PARTICLE FINDINGS</label><textarea id="wearFindings"></textarea></div>
+        <div class="field"><label>CONTAMINATION FINDINGS</label><textarea id="contaminationFindings"></textarea></div>
+        <div class="field"><label>WEAR SEVERITY (0–10 SUBJECTIVE SCALE)</label><input id="ferrousWearParticles" type="number" min="0" max="10" step="1" placeholder="0–10"><small>0 = no/minimal wear; 10 = most severe.</small></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Wear Assessment</h2></div>
+    <div class="card-body">
+      
+      <div class="wear-group">
+        <div class="wear-group-title">FERROUS WEAR PARTICLES</div>
+        
+          <div class="wear-row">
+            <input id="wl_rubbing" type="text" value="Rubbing Wear (Particles <15 µm)" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Rubbing Wear (Particles <15 µm)">
+            <input id="w_rubbing" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_severeSliding" type="text" value="Severe Sliding Wear" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Severe Sliding Wear">
+            <input id="w_severeSliding" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_cutting" type="text" value="Cutting Wear" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Cutting Wear">
+            <input id="w_cutting" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_chunksGear" type="text" value="Chunks - Gear Wear" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Chunks - Gear Wear">
+            <input id="w_chunksGear" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_reworked" type="text" value="Reworked (Laminar) Particles-Bearing Wear" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Reworked (Laminar) Particles-Bearing Wear">
+            <input id="w_reworked" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_spheres" type="text" value="Spheres" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Spheres">
+            <input id="w_spheres" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_darkOxides" type="text" value="Dark Metallo-Oxides (Black Oxides)" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Dark Metallo-Oxides (Black Oxides)">
+            <input id="w_darkOxides" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_redOxides" type="text" value="Red Oxides (Rust / Ferrous Oxides)" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Red Oxides (Rust / Ferrous Oxides)">
+            <input id="w_redOxides" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_corrosive" type="text" value="Corrosive Wear Debris" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Corrosive Wear Debris">
+            <input id="w_corrosive" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_otherFerrous" type="text" value="Others" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Others">
+            <input id="w_otherFerrous" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+      </div>
+      <div class="wear-group">
+        <div class="wear-group-title">NON-FERROUS WEAR PARTICLES</div>
+        
+          <div class="wear-row">
+            <input id="wl_nonFerrousRubbing" type="text" value="Rubbing Wear" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Rubbing Wear">
+            <input id="w_nonFerrousRubbing" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_nonFerrousSliding" type="text" value="Sliding Wear" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Sliding Wear">
+            <input id="w_nonFerrousSliding" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_gearWear" type="text" value="Gear Wear" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Gear Wear">
+            <input id="w_gearWear" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_otherNonFerrous" type="text" value="Other (Specify)" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Other (Specify)">
+            <input id="w_otherNonFerrous" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+      </div>
+      <div class="wear-group">
+        <div class="wear-group-title">CONTAMINANTS</div>
+        
+          <div class="wear-row">
+            <input id="wl_frictionPolymers" type="text" value="Friction Polymers - Lube Degradation" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Friction Polymers - Lube Degradation">
+            <input id="w_frictionPolymers" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_crystalline" type="text" value="Non-Metallic Crystalline (Sand / Dirt)" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Non-Metallic Crystalline (Sand / Dirt)">
+            <input id="w_crystalline" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_fibers" type="text" value="Fibers" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Fibers">
+            <input id="w_fibers" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+          <div class="wear-row">
+            <input id="wl_otherContaminant" type="text" value="Other (Specify)" style="border:1px solid #cbd5dd;border-radius:7px;padding:6px 9px;font-size:12px;color:#172b3a;flex:1;min-width:0" autocomplete="off" placeholder="Other (Specify)">
+            <input id="w_otherContaminant" type="number" min="0" max="10" step="1" placeholder="0–10">
+          </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Trend Values</h2></div>
+    <div class="card-body">
+      <div class="grid">
+        <div class="field"><label>FERROUS · FE</label><input id="trend_ferrousFe"></div>
+        <div class="field"><label>FERROUS · SIO₂</label><input id="trend_ferrousSiO2"></div>
+        <div class="field"><label>NON-FERROUS · CU</label><input id="trend_nonFerrousCu"></div>
+        <div class="field"><label>NON-FERROUS · CR</label><input id="trend_nonFerrousCr"></div>
+        <div class="field"><label>NON-FERROUS · AL</label><input id="trend_nonFerrousAl"></div>
+        <div class="field"><label>NON-FERROUS · PB</label><input id="trend_nonFerrousPb"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Rubbing Wear Image</h2></div>
+    <div class="card-body">
+      <div class="grid">
+        <div class="field"><label>FERROGRAPHY IMAGE NAME</label><input id="rubbingWearImageName" value="Rubbing wear"></div>
+        <div class="field"><label>RUBBING WEAR IMAGE</label><input id="rubbingWearImage" type="file" accept="image/png,image/jpeg,image/webp"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card hidden" id="previewCard">
+    <div class="card-head">
+      <h2>Report Preview</h2>
+      <div class="actions">
+        <button class="btn-secondary" onclick="printReport()">🖨 Print</button>
+        <button class="btn-success" onclick="downloadReport()">⬇ Download PDF</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <iframe id="preview" class="preview" title="Oil Analysis Report"></iframe>
+    </div>
+  </section>
+
+</div>
+
+<script src="../shared/oil-report-template.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" referrerpolicy="no-referrer"></script>
+<script>
+const { buildOilReportHtml, TEST_GROUPS, WEAR_ASSESSMENT_GROUPS } = window.EnergyOilReportTemplate;
+const wearSeverityColor = (value) => { const score = Number(value); if (value === '' || !Number.isFinite(score)) return '#8795a3'; if (score <= 2) return '#ffffff'; if (score <= 5) return '#93d050'; if (score <= 8) return '#fff200'; return '#ff1515'; };
+document.querySelectorAll('#ferrousWearParticles, [id^="w_"]').forEach((input) => input.addEventListener('input', () => { input.style.borderColor = wearSeverityColor(input.value); }));
+const $ = (id) => document.getElementById(id);
+const value = (id) => $(id)?.value?.trim() || '';
+const formSections = [];
+document.querySelectorAll('.page-wrap > section.card:not(#previewCard)').forEach((section, index) => {
+  const header = section.querySelector('.card-head');
+  const details = document.createElement('details');
+  details.className = section.className;
+  details.open = index === 0;
+  const summary = document.createElement('summary');
+  summary.className = 'card-head';
+  summary.innerHTML = header.innerHTML;
+  details.append(summary);
+  while (header.nextSibling) details.append(header.nextSibling);
+  section.replaceWith(details);
+  formSections.push(details);
+  details.addEventListener('toggle', () => {
+    if (details.open) formSections.forEach((other) => {
+      if (other !== details) other.open = false;
+    });
+  });
+});
+document.querySelectorAll('.section-nav [data-section]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const section = formSections[Number(button.dataset.section)];
+    if (!section) return;
+    section.open = true;
+    section.scrollIntoView({behavior: 'smooth', block: 'start'});
+  });
+});
+const requiredFields = [
+  ['customer', 'Customer'], ['sampleId', 'Sample ID'],
+  ['equipment', 'Equipment'], ['reportDate', 'Report Date']
+];
+requiredFields.forEach(([id]) => {
+  $(id).required = true;
+  $(id).setAttribute('aria-required', 'true');
+});
+function validateReportForm() {
+  const missing = requiredFields.find(([id]) => !value(id));
+  if (missing) {
+    const [id, label] = missing;
+    const field = $(id);
+    field.setAttribute('aria-invalid', 'true');
+    field.closest('details')?.setAttribute('open', '');
+    setNotice(`${label} is required. Please complete this field.`, true);
+    field.focus();
+    return false;
+  }
+  requiredFields.forEach(([id]) => $(id).removeAttribute('aria-invalid'));
+  ['sampleDate', 'receivedDate', 'reportDate'].forEach((id) => $(id).removeAttribute('aria-invalid'));
+
+  const dates = [['sampleDate', 'Sample Date'], ['receivedDate', 'Received Date'], ['reportDate', 'Report Date']]
+    .map(([id, label]) => ({id, label, date: value(id)})).filter((item) => item.date);
+  for (let index = 1; index < dates.length; index++) {
+    if (dates[index].date < dates[index - 1].date) {
+      const field = $(dates[index].id);
+      field.setAttribute('aria-invalid', 'true');
+      field.closest('details')?.setAttribute('open', '');
+      setNotice(`${dates[index].label} cannot be earlier than ${dates[index - 1].label}.`, true);
+      field.focus();
+      return false;
+    }
+  }
+
+  const data = collectReportData();
+  if (!Object.values(data.results).some((item) => item)) {
+    const section = formSections.find((details) => details.querySelector('#r_vis40'));
+    if (section) section.open = true;
+    setNotice('Enter at least one oil test result before generating the PDF.', true);
+    section?.querySelector('input')?.focus();
+    return false;
+  }
+  return true;
+}
+let rubbingWearImageData = '';
+$('rubbingWearImage').addEventListener('change', (event) => {
+  const file = event.target.files?.[0];
+  if (!file) { rubbingWearImageData = ''; return; }
+  const reader = new FileReader();
+  reader.onload = () => { rubbingWearImageData = String(reader.result || ''); };
+  reader.onerror = () => setNotice('Rubbing wear image could not be read.', true);
+  reader.readAsDataURL(file);
+});
+
+function collectReportData() {
+  const results = {};
+  const limits = {};
+  TEST_GROUPS.flatMap(g => g.rows).forEach(row => {
+    results[row.key] = value('r_' + row.key);
+    const limitVal = value('l_' + row.key);
+    if (limitVal) limits[row.key] = limitVal;
+  });
+
+  const wearAssessments = {};
+  const wearLabels = {};
+  WEAR_ASSESSMENT_GROUPS.flatMap(g => g.rows).forEach(row => {
+    const severity = value('w_' + row.key);
+    wearAssessments[row.key] = severity === '' ? '' : Number(severity);
+    const wl = value('wl_' + row.key);
+    if (wl) wearLabels[row.key] = wl;
+  });
+
+  return {
+    customer: value('customer'),
+    reportName: value('reportName') || 'OIL ANALYSIS TEST REPORT',
+    site: value('site'),
+    sampleId: value('sampleId'),
+    equipment: value('equipment'),
+    lubricant: value('lubricant'),
+    component: value('component'),
+    reservoir: value('reservoir'),
+    runningHours: value('runningHours'),
+    sampleDate: value('sampleDate'),
+    receivedDate: value('receivedDate'),
+    reportDate: value('reportDate'),
+    lubricantCondition: value('lubricantCondition'),
+    wearCondition: value('wearCondition'),
+    recommendation: value('recommendation'),
+    results,
+    limits,
+    wpc: value('wpc'),
+    dl: value('dl'),
+    ds: value('ds'),
+    plp: value('plp'),
+    allowableWpc: value('allowableWpc'),
+    wearFindings: value('wearFindings'),
+    contaminationFindings: value('contaminationFindings'),
+    ferrographyDiscussion: value('ferrographyDiscussion'),
+    ferrousWearParticles: value('ferrousWearParticles') === '' ? '' : Number(value('ferrousWearParticles')),
+    wearAssessments,
+    wearLabels,
+    trendValues: {
+      ferrousFe: value('trend_ferrousFe'), ferrousSiO2: value('trend_ferrousSiO2'),
+      nonFerrousCu: value('trend_nonFerrousCu'), nonFerrousCr: value('trend_nonFerrousCr'),
+      nonFerrousAl: value('trend_nonFerrousAl'), nonFerrousPb: value('trend_nonFerrousPb')
+    },
+    rubbingWearImage: rubbingWearImageData,
+    rubbingWearImageName: value('rubbingWearImageName') || 'Rubbing wear'
+  };
+}
+
+const adminUser = JSON.parse(sessionStorage.getItem('es_admin_user') || 'null');
+const adminPassword = sessionStorage.getItem('es_admin_pass') || '';
+const apiRoot = (localStorage.getItem('es_admin_api_url') || 'https://brocode.fun/api').replace(/\/+$/, '');
+if (!adminUser || !adminPassword || String(adminUser.role || '').toLowerCase() !== 'admin') {
+  alert('Please sign in to the admin panel first.');
+  location.replace('index.html');
+}
+
+function setNotice(message, error = false) {
+  const notice = $('reportNotice');
+  notice.textContent = message;
+  notice.style.background = error ? '#fff1f0' : '#eef6ff';
+  notice.style.color = error ? '#9f2d25' : '#1e4f88';
+  if (error) notice.scrollIntoView({behavior: 'smooth', block: 'center'});
+}
+
+async function imageAsDataUrl(source) {
+  if (/^data:image\//i.test(source)) return source;
+  const response = await fetch(new URL(source, document.baseURI));
+  if (!response.ok) throw new Error('A report image could not be loaded: ' + source);
+  const blob = await response.blob();
+  return await new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('A report image could not be read.'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+async function requestReportSave(data, pdfBase64) {
+  const response = await fetch(apiRoot + '/oil_reports.php', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({action: 'save', data, pdf_base64: pdfBase64, email: adminUser.email, password: adminPassword})
+  });
+  const result = await response.json();
+  if (!response.ok || !result.status) throw new Error(`Report could not be saved (HTTP ${response.status}).`);
+  return result.data.id;
+}
+
+async function makePdf() {
+  const JsPDF = window.jspdf?.jsPDF;
+  if (!window.html2canvas || !JsPDF) throw new Error('PDF generator did not load. Refresh the page and try again.');
+  const report = $('preview').contentDocument;
+  const pages = report ? [...report.querySelectorAll('body > .page')] : [];
+  if (!pages.length) throw new Error('The report preview is not ready. Generate the preview again.');
+
+  // Capture each designed report sheet separately. Converting the entire
+  // iframe body lets html2pdf split tall content unpredictably and add blanks.
+  const pdf = new JsPDF({unit: 'mm', format: 'a4', orientation: 'portrait'});
+  const pageWidth = 210;
+  const pageHeight = 297;
+  const margin = 9;
+  const contentWidth = pageWidth - margin * 2;
+  const contentHeight = pageHeight - margin * 2;
+  const oldHtmlWidth = report.documentElement.style.width;
+  const oldBodyWidth = report.body.style.width;
+  const captureWidth = Math.round(contentWidth / 25.4 * 96) + 'px';
+
+  try {
+    report.documentElement.style.width = captureWidth;
+    report.body.style.width = captureWidth;
+    await Promise.all([...report.images].map((img) => img.decode ? img.decode().catch(() => {}) : Promise.resolve()));
+    if (report.fonts?.ready) await report.fonts.ready;
+
+    for (let index = 0; index < pages.length; index++) {
+      const canvas = await window.html2canvas(pages[index], {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+        windowWidth: Math.round(contentWidth / 25.4 * 96),
+        scrollX: 0,
+        scrollY: 0
+      });
+      if (index > 0) pdf.addPage('a4', 'portrait');
+      const fit = Math.min(contentWidth / canvas.width, contentHeight / canvas.height);
+      const drawWidth = canvas.width * fit;
+      const drawHeight = canvas.height * fit;
+      const x = (pageWidth - drawWidth) / 2;
+      const y = (pageHeight - drawHeight) / 2;
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', x, y, drawWidth, drawHeight, undefined, 'FAST');
+      canvas.width = 0;
+      canvas.height = 0;
+    }
+  } finally {
+    report.documentElement.style.width = oldHtmlWidth;
+    report.body.style.width = oldBodyWidth;
+  }
+
+  const dataUri = pdf.output('datauristring');
+  const match = dataUri.match(/^data:application\/pdf(?:;[^,]*)?;base64,([\s\S]+)$/i);
+  if (!match) throw new Error('PDF data was not returned in a supported format.');
+  return match[1];
+}
+
+async function generateExactReport() {
+  if (location.protocol === 'file:') {
+    setNotice('Open the hosted admin page to generate and save a report. The local file cannot reach the report API.', true);
+    return;
+  }
+  if (!validateReportForm()) return;
+  const data = collectReportData();
+  const button = $('generateButton');
+  button.disabled = true;
+  button.textContent = 'Generating and saving…';
+  try {
+    setNotice('Loading report images…');
+    const images = {
+      logo: await imageAsDataUrl('/assets/img37.png'),
+      seal: await imageAsDataUrl('/assets/img31.png'),
+      signature: await imageAsDataUrl('/assets/signature.png'),
+      stamp: await imageAsDataUrl('/assets/img33.png')
+    };
+    setNotice('Preparing the report preview…');
+    const html = buildOilReportHtml(data, images);
+    const frame = $('preview');
+    await new Promise((resolve) => {
+      frame.onload = resolve;
+      frame.srcdoc = html;
+    });
+    $('previewCard').classList.remove('hidden');
+    window.__generatedReportData = data;
+    setNotice('Creating the PDF…');
+    window.__generatedReportPdf = await makePdf();
+    setNotice('Saving the PDF to Oil Reports…');
+    const reportId = await requestReportSave(data, window.__generatedReportPdf);
+    window.__generatedReportId = reportId;
+    setNotice('PDF generated and saved as report #' + reportId + '. It is ready to assign from Oil Reports.');
+    $('previewCard').scrollIntoView({behavior:'smooth', block:'start'});
+  } catch (error) {
+    console.error('PDF generation or save failed:', error);
+    setNotice('PDF could not be generated or saved. Please check the form and try again.', true);
+  } finally {
+    button.disabled = false;
+    button.textContent = '📄 Generate & Save PDF';
+  }
+}
+
+function printReport() {
+  if (!window.__generatedReportPdf) return;
+  const bytes = Uint8Array.from(atob(window.__generatedReportPdf), (char) => char.charCodeAt(0));
+  const url = URL.createObjectURL(new Blob([bytes], {type:'application/pdf'}));
+  window.open(url, '_blank', 'noopener');
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+function downloadReport() {
+  if (!window.__generatedReportPdf) return;
+  const bytes = Uint8Array.from(atob(window.__generatedReportPdf), (char) => char.charCodeAt(0));
+  const url = URL.createObjectURL(new Blob([bytes], {type:'application/pdf'}));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'oil-report-' + (value('sampleId') || 'report') + '.pdf';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+const today = new Date().toISOString().slice(0,10);
+$('sampleDate').value = today;
+$('receivedDate').value = today;
+$('reportDate').value = today;
+</script>
+</body>
+</html>
+
+
