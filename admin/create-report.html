@@ -111,9 +111,10 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:#c73c3c;back
   </section>
 
   <section class="card">
-    <div class="card-head"><h2>Recommendations</h2></div>
+    <div class="card-head"><h2>Oil Condition</h2></div>
     <div class="card-body">
-      <div class="field"><textarea id="recommendation" placeholder="Recommendations..."></textarea></div>
+      <div class="field"><label>OIL CONDITION RECOMMENDATIONS</label><textarea id="recommendation" placeholder="Describe recommended action..."></textarea></div>
+      <div class="field"><label>OIL CONDITION OBSERVATION</label><textarea id="oilConditionObservation" placeholder="Describe oil condition observations..."></textarea></div>
     </div>
   </section>
 
@@ -568,10 +569,9 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:#c73c3c;back
       </div>
       <div style="height:12px"></div>
       <div class="two-col">
-        <div class="field"><label>DISCUSSION OF RESULTS</label><textarea id="ferrographyDiscussion"></textarea></div>
-        <div class="field"><label>WEAR PARTICLE FINDINGS</label><textarea id="wearFindings"></textarea></div>
-        <div class="field"><label>CONTAMINATION FINDINGS</label><textarea id="contaminationFindings"></textarea></div>
-        <div class="field"><label>WEAR SEVERITY (0–10 SUBJECTIVE SCALE)</label><input id="ferrousWearParticles" type="number" min="0" max="10" step="1" placeholder="0–10"><small>0 = no/minimal wear; 10 = most severe.</small></div>
+        <div class="field"><label>MACHINE CONDITION RECOMMENDATIONS</label><textarea id="machineConditionRecommendation"></textarea></div>
+        <div class="field"><label>MACHINE CONDITION OBSERVATION</label><textarea id="machineConditionObservation"></textarea></div>
+        <div class="field"><label>WEAR SEVERITY (0–10 SUBJECTIVE SCALE)</label><input id="ferrousWearParticles" type="number" min="0" max="10" step="1" placeholder="0–10"><small>0 (None); 1–4 (Few) Green; 5–7 (Moderate) Yellow; 8–10 (Heavy) Red.</small></div>
       </div>
     </div>
   </section>
@@ -671,12 +671,18 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:#c73c3c;back
     <div class="card-head"><h2>Trend Values</h2></div>
     <div class="card-body">
       <div class="grid">
-        <div class="field"><label>FERROUS · FE</label><input id="trend_ferrousFe"></div>
-        <div class="field"><label>FERROUS · SIO₂</label><input id="trend_ferrousSiO2"></div>
-        <div class="field"><label>NON-FERROUS · CU</label><input id="trend_nonFerrousCu"></div>
-        <div class="field"><label>NON-FERROUS · CR</label><input id="trend_nonFerrousCr"></div>
-        <div class="field"><label>NON-FERROUS · AL</label><input id="trend_nonFerrousAl"></div>
-        <div class="field"><label>NON-FERROUS · PB</label><input id="trend_nonFerrousPb"></div>
+        <div class="field"><label>FERROUS · RUBBING WEAR</label><input id="trend_ferrousRubbingWear"></div>
+        <div class="field"><label>FERROUS · SEVERE SLIDING WEAR</label><input id="trend_ferrousSevereSlidingWear"></div>
+        <div class="field"><label>FERROUS · CUTTING WEAR</label><input id="trend_ferrousCuttingWear"></div>
+        <div class="field"><label>FERROUS · CHUNKS OR GEAR WEAR</label><input id="trend_ferrousChunksGearWear"></div>
+        <div class="field"><label>FERROUS · BEARING WEAR</label><input id="trend_ferrousBearingWear"></div>
+        <div class="field"><label>FERROUS · SPHERES</label><input id="trend_ferrousSpheres"></div>
+        <div class="field"><label>NON-FERROUS · RUBBING WEAR</label><input id="trend_nonFerrousRubbingWear"></div>
+        <div class="field"><label>NON-FERROUS · SLIDING WEAR</label><input id="trend_nonFerrousSlidingWear"></div>
+        <div class="field"><label>NON-FERROUS · BABBITT / WHITE METAL JOURNAL BEARINGS</label><input id="trend_nonFerrousBabbittWhiteMetal"></div>
+        <div class="field"><label>NON-FERROUS · WHITE NON-FERROUS PARTICLES – ALUMINIUM</label><input id="trend_nonFerrousAluminium"></div>
+        <div class="field"><label>NON-FERROUS · NON-METALLIC CRYSTALLINE (SAND / DIRT)</label><input id="trend_nonFerrousCrystalline"></div>
+        <div class="field"><label>NON-FERROUS · FIBERS</label><input id="trend_nonFerrousFibers"></div>
       </div>
     </div>
   </section>
@@ -711,7 +717,7 @@ input[aria-invalid="true"],select[aria-invalid="true"]{border-color:#c73c3c;back
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" referrerpolicy="no-referrer"></script>
 <script>
 const { buildOilReportHtml, TEST_GROUPS, WEAR_ASSESSMENT_GROUPS } = window.EnergyOilReportTemplate;
-const wearSeverityColor = (value) => { const score = Number(value); if (value === '' || !Number.isFinite(score)) return '#8795a3'; if (score <= 2) return '#ffffff'; if (score <= 5) return '#93d050'; if (score <= 8) return '#fff200'; return '#ff1515'; };
+const wearSeverityColor = (value) => { const score = Number(value); if (value === '' || !Number.isFinite(score)) return '#8795a3'; const rating = Math.round(score); if (rating === 0) return '#ffffff'; if (rating <= 4) return '#93d050'; if (rating <= 7) return '#fff200'; return '#ff1515'; };
 document.querySelectorAll('#ferrousWearParticles, [id^="w_"]').forEach((input) => input.addEventListener('input', () => { input.style.borderColor = wearSeverityColor(input.value); }));
 const $ = (id) => document.getElementById(id);
 const value = (id) => $(id)?.value?.trim() || '';
@@ -831,6 +837,7 @@ function collectReportData() {
     lubricantCondition: value('lubricantCondition'),
     wearCondition: value('wearCondition'),
     recommendation: value('recommendation'),
+    oilConditionObservation: value('oilConditionObservation'),
     results,
     limits,
     wpc: value('wpc'),
@@ -838,16 +845,25 @@ function collectReportData() {
     ds: value('ds'),
     plp: value('plp'),
     allowableWpc: value('allowableWpc'),
-    wearFindings: value('wearFindings'),
-    contaminationFindings: value('contaminationFindings'),
-    ferrographyDiscussion: value('ferrographyDiscussion'),
+    machineConditionRecommendation: value('machineConditionRecommendation'),
+    machineConditionObservation: value('machineConditionObservation'),
     ferrousWearParticles: value('ferrousWearParticles') === '' ? '' : Number(value('ferrousWearParticles')),
     wearAssessments,
     wearLabels,
     trendValues: {
-      ferrousFe: value('trend_ferrousFe'), ferrousSiO2: value('trend_ferrousSiO2'),
-      nonFerrousCu: value('trend_nonFerrousCu'), nonFerrousCr: value('trend_nonFerrousCr'),
-      nonFerrousAl: value('trend_nonFerrousAl'), nonFerrousPb: value('trend_nonFerrousPb')
+      ...(window.__legacyTrendValues || {}),
+      ferrousRubbingWear: value('trend_ferrousRubbingWear'),
+      ferrousSevereSlidingWear: value('trend_ferrousSevereSlidingWear'),
+      ferrousCuttingWear: value('trend_ferrousCuttingWear'),
+      ferrousChunksGearWear: value('trend_ferrousChunksGearWear'),
+      ferrousBearingWear: value('trend_ferrousBearingWear'),
+      ferrousSpheres: value('trend_ferrousSpheres'),
+      nonFerrousRubbingWear: value('trend_nonFerrousRubbingWear'),
+      nonFerrousSlidingWear: value('trend_nonFerrousSlidingWear'),
+      nonFerrousBabbittWhiteMetal: value('trend_nonFerrousBabbittWhiteMetal'),
+      nonFerrousAluminium: value('trend_nonFerrousAluminium'),
+      nonFerrousCrystalline: value('trend_nonFerrousCrystalline'),
+      nonFerrousFibers: value('trend_nonFerrousFibers')
     },
     rubbingWearImage: rubbingWearImageData,
     rubbingWearImageName: value('rubbingWearImageName') || 'Rubbing wear'
@@ -886,11 +902,60 @@ async function imageAsDataUrl(source) {
 async function requestReportSave(data, pdfBase64) {
   const response = await fetch(apiRoot + '/oil_reports.php', {
     method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({action: 'save', data, pdf_base64: pdfBase64, email: adminUser.email, password: adminPassword})
+    body: JSON.stringify({action: 'save', report_id: window.__editingReportId || undefined, data, pdf_base64: pdfBase64, email: adminUser.email, password: adminPassword})
   });
   const result = await response.json();
   if (!response.ok || !result.status) throw new Error(`Report could not be saved (HTTP ${response.status}).`);
   return result.data.id;
+}
+
+async function loadReportForEdit() {
+  const reportId = Number(new URLSearchParams(location.search).get('report_id'));
+  if (!Number.isInteger(reportId) || reportId < 1) return;
+  setNotice('Loading saved report for editing…');
+  const response = await fetch(apiRoot + '/oil_reports.php', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({action: 'get', report_id: reportId, email: adminUser.email, password: adminPassword})
+  });
+  const result = await response.json();
+  if (!response.ok || !result.status || !result.data?.data) throw new Error(result.message || 'Saved report could not be loaded.');
+  const data = result.data.data;
+  const asDateInput = (date) => {
+    const value = String(date ?? '');
+    const dayFirst = value.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+    return dayFirst ? `${dayFirst[3]}-${dayFirst[2]}-${dayFirst[1]}` : value;
+  };
+  const simpleFields = [
+    'customer', 'reportName', 'site', 'sampleId', 'equipment', 'lubricant', 'component',
+    'reservoir', 'runningHours', 'sampleDate', 'receivedDate', 'reportDate',
+    'lubricantCondition', 'wearCondition', 'recommendation', 'oilConditionObservation',
+    'wpc', 'dl', 'ds', 'plp', 'allowableWpc', 'ferrousWearParticles', 'rubbingWearImageName',
+  ];
+  simpleFields.forEach((key) => {
+    if ($(key) && data[key] !== undefined && data[key] !== null) {
+      $(key).value = ['sampleDate', 'receivedDate', 'reportDate'].includes(key) ? asDateInput(data[key]) : data[key];
+    }
+  });
+  const legacyMachineRecommendation = [
+    data.ferrographyDiscussion ? `Discussion of results: ${data.ferrographyDiscussion}` : '',
+    data.wearFindings ? `Wear particle findings: ${data.wearFindings}` : '',
+    data.contaminationFindings ? `Contamination findings: ${data.contaminationFindings}` : '',
+  ].filter(Boolean).join('\n');
+  $('machineConditionRecommendation').value = data.machineConditionRecommendation ?? legacyMachineRecommendation;
+  $('machineConditionObservation').value = data.machineConditionObservation || '';
+  Object.entries(data.results || {}).forEach(([key, value]) => { if ($('r_' + key)) $('r_' + key).value = value ?? ''; });
+  Object.entries(data.limits || {}).forEach(([key, value]) => { if ($('l_' + key)) $('l_' + key).value = value ?? ''; });
+  Object.entries(data.wearAssessments || {}).forEach(([key, value]) => { if ($('w_' + key)) $('w_' + key).value = value ?? ''; });
+  Object.entries(data.wearLabels || {}).forEach(([key, value]) => { if ($('wl_' + key)) $('wl_' + key).value = value ?? ''; });
+  window.__legacyTrendValues = data.trendValues || {};
+  Object.entries(window.__legacyTrendValues).forEach(([key, value]) => {
+    const input = $('trend_' + key);
+    if (input) input.value = value ?? '';
+  });
+  rubbingWearImageData = data.rubbingWearImage || '';
+  window.__editingReportId = reportId;
+  $('generateButton').textContent = 'Update & Save PDF';
+  setNotice(`Editing saved report #${reportId}. Generate the PDF to save your changes.`);
 }
 
 async function makePdf() {
@@ -988,7 +1053,7 @@ async function generateExactReport() {
     setNotice('PDF could not be generated or saved. Please check the form and try again.', true);
   } finally {
     button.disabled = false;
-    button.textContent = '📄 Generate & Save PDF';
+    button.textContent = window.__editingReportId ? 'Update & Save PDF' : '📄 Generate & Save PDF';
   }
 }
 
@@ -1015,6 +1080,10 @@ const today = new Date().toISOString().slice(0,10);
 $('sampleDate').value = today;
 $('receivedDate').value = today;
 $('reportDate').value = today;
+loadReportForEdit().catch((error) => {
+  console.error('Saved report could not be loaded for editing:', error);
+  setNotice(error instanceof Error ? error.message : 'Saved report could not be loaded for editing.', true);
+});
 </script>
 </body>
 </html>

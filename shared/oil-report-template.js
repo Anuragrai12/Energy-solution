@@ -84,9 +84,9 @@ const escapeHtml = (value) => String(value ?? '')
 const normalizedSeverity = (value) => {
   if (typeof value === 'number' && Number.isFinite(value)) {
     const score = Math.max(0, Math.min(10, Math.round(value)));
-    if (score <= 2) return 'None';
-    if (score <= 5) return 'Few';
-    if (score <= 8) return 'Moderate';
+    if (score === 0) return 'None';
+    if (score <= 4) return 'Few';
+    if (score <= 7) return 'Moderate';
     return 'Heavy';
   }
   return ['None', 'Few', 'Moderate', 'Heavy'].includes(value) ? value : null;
@@ -109,6 +109,7 @@ function buildOilReportHtml(data, images) {
   const rows = TEST_GROUPS.map((group) => `
     <tr class="group"><td colspan="5">${escapeHtml(group.title)}</td></tr>
     ${group.rows.map((row) => `
+      ${group.title === 'MACHINE CONDITION' && row.key === 'vanadium' ? '<tr class="group"><td colspan="5">CONTAMINANTS</td></tr>' : ''}
       <tr>
         <td>${escapeHtml(row.name)}</td><td>${escapeHtml(row.method)}</td><td>${escapeHtml(row.unit)}</td>
         <td class="result">${escapeHtml(data.results?.[row.key]?.trim() || '-')}</td><td>${escapeHtml(data.limits && data.limits[row.key] !== undefined ? data.limits[row.key] : row.limit)}</td>
@@ -119,11 +120,14 @@ function buildOilReportHtml(data, images) {
   const metric = (label, value) => `<div class="metric"><div>${label}</div><strong>${escapeHtml(String(value ?? '').trim() || '-')}</strong></div>`;
   const image = (value) => value;
   const recommendation = escapeHtml((data.recommendation || '').trim() || '-');
-  const discussion = [
-    data.ferrographyDiscussion?.trim() || '',
+  const oilObservation = escapeHtml((data.oilConditionObservation || '').trim() || '-');
+  const legacyMachineRecommendations = [
+    data.ferrographyDiscussion?.trim() ? `Discussion of results: ${data.ferrographyDiscussion.trim()}` : '',
     data.wearFindings?.trim() ? `Wear particle findings: ${data.wearFindings.trim()}` : '',
     data.contaminationFindings?.trim() ? `Contamination findings: ${data.contaminationFindings.trim()}` : '',
-  ].filter(Boolean).map(escapeHtml).join('<br>') || '-';
+  ].filter(Boolean).join('\n');
+  const machineRecommendation = escapeHtml((data.machineConditionRecommendation || '').trim() || legacyMachineRecommendations || '-');
+  const machineObservation = escapeHtml((data.machineConditionObservation || '').trim() || '-');
   const chartColors = ['#4a80b6', '#8bc34a', '#f0a532', '#9c62a8', '#3aa6a0', '#e86d5d'];
   const valueFor = (key) => {
     const rawValue = data.results?.[key]?.trim();
@@ -188,19 +192,48 @@ function buildOilReportHtml(data, images) {
   const imageHtml = safeRubbingImage
     ? `<img class="rubbing-image" src="${image(safeRubbingImage)}"/>`
     : `<div class="image-placeholder">Rubbing wear micrograph not attached</div>`;
+  const readTrend = (key) => {
+    const raw = data.trendValues?.[key];
+    if (raw === undefined || raw === null || String(raw).trim() === '') return null;
+    const value = Number(raw);
+    return Number.isFinite(value) && value >= 0 ? value : null;
+  };
+  const ferrousTrend = [
+    { label: 'Rubbing wear', key: 'ferrousRubbingWear', color: '#4a80b6' },
+    { label: 'Severe sliding wear', key: 'ferrousSevereSlidingWear', color: '#8bc34a' },
+    { label: 'Cutting wear', key: 'ferrousCuttingWear', color: '#f0a532' },
+    { label: 'Chunks or gear wear', key: 'ferrousChunksGearWear', color: '#9c62a8' },
+    { label: 'Bearing wear', key: 'ferrousBearingWear', color: '#3aa6a0' },
+    { label: 'Spheres', key: 'ferrousSpheres', color: '#e86d5d' },
+  ];
+  const nonFerrousTrend = [
+    { label: 'Rubbing wear', key: 'nonFerrousRubbingWear', color: '#4a80b6' },
+    { label: 'Sliding wear', key: 'nonFerrousSlidingWear', color: '#8bc34a' },
+    { label: 'Babbitt / white metal journal bearings', key: 'nonFerrousBabbittWhiteMetal', color: '#f0a532' },
+    { label: 'White non-ferrous particles – aluminium', key: 'nonFerrousAluminium', color: '#9c62a8' },
+    { label: 'Non-metallic crystalline (sand / dirt)', key: 'nonFerrousCrystalline', color: '#3aa6a0' },
+    { label: 'Fibers', key: 'nonFerrousFibers', color: '#e86d5d' },
+  ];
+  const hasNewTrendValues = [...ferrousTrend, ...nonFerrousTrend].some(({ key }) => readTrend(key) !== null);
+  const ferrousTrendValues = hasNewTrendValues
+    ? ferrousTrend.map((item) => ({ ...item, value: readTrend(item.key) }))
+    : [
+      { label: 'Fe', value: readTrend('ferrousFe'), color: '#4a80b6' },
+      { label: 'SiO2', value: readTrend('ferrousSiO2'), color: '#75504b' },
+    ];
+  const nonFerrousTrendValues = hasNewTrendValues
+    ? nonFerrousTrend.map((item) => ({ ...item, value: readTrend(item.key) }))
+    : [
+      { label: 'Cu', value: readTrend('nonFerrousCu'), color: '#4a80b6' },
+      { label: 'Cr', value: readTrend('nonFerrousCr'), color: '#93d050' },
+      { label: 'Al', value: readTrend('nonFerrousAl'), color: '#f0a532' },
+      { label: 'Pb', value: readTrend('nonFerrousPb'), color: '#9c62a8' },
+    ];
   const secondCharts = [
     verticalChart('PLP', [{ label: 'PLP', value: valueFor('plp') ?? (data.plp ? Number(data.plp) : null), color: '#4a80b6' }], 96),
     verticalChart('WPC', [{ label: 'WPC', value: valueFor('wpc') ?? (data.wpc ? Number(data.wpc) : null), color: '#4a80b6' }], 96),
-    verticalChart('FERROUS TREND GRAPH', [
-      { label: 'Fe', value: Number.isFinite(Number(data.trendValues?.ferrousFe)) && data.trendValues?.ferrousFe?.trim() ? Number(data.trendValues.ferrousFe) : null, color: '#4a80b6' },
-      { label: 'SiO2', value: Number.isFinite(Number(data.trendValues?.ferrousSiO2)) && data.trendValues?.ferrousSiO2?.trim() ? Number(data.trendValues.ferrousSiO2) : null, color: '#75504b' },
-    ], 106, true),
-    verticalChart('NON-FERROUS TREND GRAPH', [
-      { label: 'Cu', value: Number.isFinite(Number(data.trendValues?.nonFerrousCu)) && data.trendValues?.nonFerrousCu?.trim() ? Number(data.trendValues.nonFerrousCu) : null, color: '#4a80b6' },
-      { label: 'Cr', value: Number.isFinite(Number(data.trendValues?.nonFerrousCr)) && data.trendValues?.nonFerrousCr?.trim() ? Number(data.trendValues.nonFerrousCr) : null, color: '#93d050' },
-      { label: 'Al', value: Number.isFinite(Number(data.trendValues?.nonFerrousAl)) && data.trendValues?.nonFerrousAl?.trim() ? Number(data.trendValues.nonFerrousAl) : null, color: '#f0a532' },
-      { label: 'Pb', value: Number.isFinite(Number(data.trendValues?.nonFerrousPb)) && data.trendValues?.nonFerrousPb?.trim() ? Number(data.trendValues.nonFerrousPb) : null, color: '#9c62a8' },
-    ], 106, true),
+    verticalChart('FERROUS TREND GRAPH', ferrousTrendValues, 106, true),
+    verticalChart('NON-FERROUS TREND GRAPH', nonFerrousTrendValues, 106, true),
   ].join('');
 
   return `<!DOCTYPE html>
@@ -296,7 +329,8 @@ function buildOilReportHtml(data, images) {
         ${meta('Equipment', data.equipment)}${meta('Reservoir / Hours', `${data.reservoir || '-'} / ${data.runningHours || '-'}`)}${meta('Received Date', data.receivedDate)}
         ${meta('Component', data.component)}${meta('Report Date', data.reportDate)}${meta('Area / Site', data.site)}
       </div>
-      <div class="recommendation"><b>Recommendations</b>${recommendation}</div>
+      <div class="recommendation"><b>Oil Condition Recommendations</b>${recommendation}</div>
+      <div class="recommendation"><b>Oil Condition Observation</b>${oilObservation}</div>
       <div class="page-one-layout">
         <div><div class="table-title">Oil Analysis Test Results</div>
           <table class="analysis-table"><thead><tr><th>Test Parameter</th><th>Test Method</th><th>Unit</th><th>Test Report</th><th>Limits</th></tr></thead><tbody>${rows}</tbody></table>
@@ -323,9 +357,11 @@ function buildOilReportHtml(data, images) {
       </div>
       <div class="ferro-title">DIRECT READING FERROGRAPHY ANALYSIS TEST REPORT</div>
       <div class="metrics">${metric('Wear Particle Concentration (WPC)', data.wpc)}${metric('DL', data.dl)}${metric('DS', data.ds)}${metric('PLP', data.plp)}${metric('Allowable WPC Limit', data.allowableWpc)}</div>
-      <div class="discussion"><b>Discussion of Results:</b>${discussion}</div>
+      <div class="discussion"><b>Machine Condition Recommendations</b>${machineRecommendation}</div>
+      <div class="discussion"><b>Machine Condition Observation</b>${machineObservation}</div>
       <div class="page-two-layout">
         <div>
+          <div class="discussion"><b>Wear Assessment</b>Severity ratings based on 0-10 subjective scale and based on the microscopic evaluation of wear Particles Size, Shape, Surface texture, Concentration over the ferrogram.<br>0(None), 1-4(Few), 5-7(Moderate), 8-10(Heavy).<br>Colour coding: 1-4 Green, 5-7 Yellow, 8-10 Red.</div>
           <table class="analysis-table severity-table severity-legend"><colgroup><col style="width:48%"/><col span="4" style="width:13%"/></colgroup><tbody><tr><th class="overall-label">FERROUS WEAR PARTICLES:${overallScoreLabel ? ` (${overallScoreLabel})` : ''}</th>${WEAR_SEVERITIES.map((severity) => `<th class="severity-head ${severityValue === severity ? 'active-severity' : ''}" style="background:${severityColor(severity)};color:${severity === 'None' ? '#333' : '#111'}">${severity}</th>`).join('')}</tr></tbody></table>
           <table class="analysis-table severity-table"><colgroup><col style="width:48%"/><col span="4" style="width:13%"/></colgroup><tbody>${severityRows}</tbody></table>
           <div class="wear-photo">${imageHtml}<div class="photo-caption">${imageCaption}</div></div>

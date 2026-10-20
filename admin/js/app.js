@@ -442,6 +442,9 @@ function renderReportsTable() {
               <button class="action-btn" onclick="previewOrDownloadPdf(${r.id})" title="Download or Preview PDF">
                 📥 PDF
               </button>
+              <button class="action-btn" onclick="editReport(${Number(r.id)})" title="Edit Report">
+                ✏️ Edit
+              </button>
               <button class="action-btn btn-assign" onclick="openAssignModal(${r.id})" title="Assign to Customer">
                 👤 ${isAssigned ? 'Reassign' : 'Assign'}
               </button>
@@ -494,6 +497,7 @@ function renderRecentReports() {
             <div class="table-actions">
               <button class="action-btn" onclick="viewReportDetails(${r.id})">👁️</button>
               <button class="action-btn" onclick="previewOrDownloadPdf(${r.id})">📥</button>
+              <button class="action-btn" onclick="editReport(${Number(r.id)})" title="Edit Report">✏️</button>
               <button class="action-btn btn-assign" onclick="openAssignModal(${r.id})">👤</button>
             </div>
           </td>
@@ -872,6 +876,11 @@ async function deleteReport(reportId) {
 }
 
 // ================= VIEW REPORT DETAILS =================
+function editReport(reportId) {
+  if (!Number.isInteger(Number(reportId)) || Number(reportId) < 1) return;
+  window.location.href = `create-report.html?report_id=${encodeURIComponent(Number(reportId))}`;
+}
+
 async function viewReportDetails(reportId) {
   try {
     showToast('Loading report details...', 'info');
@@ -943,6 +952,8 @@ async function viewReportDetails(reportId) {
     if (btnDownload) {
       btnDownload.onclick = () => previewOrDownloadPdf(reportId);
     }
+    const btnEdit = document.getElementById('btnEditDetailReport');
+    if (btnEdit) btnEdit.onclick = () => editReport(reportId);
 
     openModal('modalReportDetails');
   } catch (err) {

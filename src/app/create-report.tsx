@@ -38,9 +38,10 @@ const getWearSeverityColor = (value: WearSeverity) => {
   if (value === '') return '#8795A3';
   const score = typeof value === 'number' ? value : ({ None: 0, Few: 3, Moderate: 6, Heavy: 10 } as const)[value];
   if (!Number.isFinite(score)) return '#8795A3';
-  if (score <= 2) return '#FFFFFF';
-  if (score <= 5) return '#93D050';
-  if (score <= 8) return '#FFF200';
+  const rating = Math.round(score);
+  if (rating === 0) return '#FFFFFF';
+  if (rating <= 4) return '#93D050';
+  if (rating <= 7) return '#FFF200';
   return '#FF1515';
 };
 
@@ -69,6 +70,7 @@ const createBlankReport = (): OilReportData => ({
   lubricantCondition: '',
   wearCondition: '',
   recommendation: '',
+  oilConditionObservation: '',
   results: {},
   limits: {},
   wpc: '',
@@ -76,6 +78,8 @@ const createBlankReport = (): OilReportData => ({
   ds: '',
   plp: '',
   allowableWpc: '',
+  machineConditionRecommendation: '',
+  machineConditionObservation: '',
   wearFindings: '',
   contaminationFindings: '',
   ferrographyDiscussion: '',
@@ -113,6 +117,13 @@ export default function CreateReportScreen() {
         setForm({
           ...createBlankReport(),
           ...report.data,
+          machineConditionRecommendation: report.data.machineConditionRecommendation ?? [
+            report.data.ferrographyDiscussion ? `Discussion of results: ${report.data.ferrographyDiscussion}` : '',
+            report.data.wearFindings ? `Wear particle findings: ${report.data.wearFindings}` : '',
+            report.data.contaminationFindings ? `Contamination findings: ${report.data.contaminationFindings}` : '',
+          ].filter(Boolean).join('\n'),
+          machineConditionObservation: report.data.machineConditionObservation ?? '',
+          oilConditionObservation: report.data.oilConditionObservation ?? '',
           wearAssessments: { ...DEFAULT_WEAR_ASSESSMENTS, ...report.data.wearAssessments },
           wearLabels: { ...report.data.wearLabels },
           trendValues: { ...report.data.trendValues },
@@ -324,7 +335,8 @@ export default function CreateReportScreen() {
               {conditionPicker('Lubricant condition', 'lubricantCondition')}
               {conditionPicker('Wear metals condition', 'wearCondition')}
             </View>
-            {textField('Recommendations', 'recommendation', 'Describe recommended action', { multiline: true })}
+            {textField('Oil Condition Recommendations', 'recommendation', 'Describe recommended action', { multiline: true })}
+            {textField('Oil Condition Observation', 'oilConditionObservation', 'Describe oil condition observations', { multiline: true })}
           </View>
 
           <View style={styles.sectionCard}>
@@ -397,9 +409,13 @@ export default function CreateReportScreen() {
             <Text style={styles.fieldHelp}>Enter particle counts for this sample; these are separate from wear-metal ppm results.</Text>
             <View style={styles.twoColumn}>
               {([
-                ['Ferrous · Fe', 'ferrousFe'], ['Ferrous · SiO₂', 'ferrousSiO2'],
-                ['Non-ferrous · Cu', 'nonFerrousCu'], ['Non-ferrous · Cr', 'nonFerrousCr'],
-                ['Non-ferrous · Al', 'nonFerrousAl'], ['Non-ferrous · Pb', 'nonFerrousPb'],
+                ['Rubbing wear', 'ferrousRubbingWear'], ['Severe sliding wear', 'ferrousSevereSlidingWear'],
+                ['Cutting wear', 'ferrousCuttingWear'], ['Chunks or gear wear', 'ferrousChunksGearWear'],
+                ['Bearing wear', 'ferrousBearingWear'], ['Spheres', 'ferrousSpheres'],
+                ['Rubbing wear', 'nonFerrousRubbingWear'], ['Sliding wear', 'nonFerrousSlidingWear'],
+                ['Babbitt / white metal journal bearings', 'nonFerrousBabbittWhiteMetal'],
+                ['White non-ferrous particles – aluminium', 'nonFerrousAluminium'],
+                ['Non-metallic crystalline (sand / dirt)', 'nonFerrousCrystalline'], ['Fibers', 'nonFerrousFibers'],
               ] as const).map(([label, key]) => (
                 <View style={styles.field} key={key}>
                   <Text style={styles.fieldLabel}>{label.toUpperCase()}</Text>
@@ -415,7 +431,7 @@ export default function CreateReportScreen() {
               ))}
             </View>
             <Text style={styles.subsectionTitle}>Wear severity (0–10 subjective scale)</Text>
-            <Text style={styles.fieldHelp}>0 = no/minimal wear; 10 = most severe.</Text>
+            <Text style={styles.fieldHelp}>0 = None; 1–4 = Few (green); 5–7 = Moderate (yellow); 8–10 = Heavy (red).</Text>
             <View style={styles.severityRow}>
               <TextInput
                 value={form.ferrousWearParticles === '' ? '' : String(form.ferrousWearParticles)}
@@ -461,9 +477,8 @@ export default function CreateReportScreen() {
             {form.rubbingWearImage ? (
               <Image source={{ uri: form.rubbingWearImage }} style={styles.rubbingPreview} resizeMode="contain" />
             ) : null}
-            {textField('Wear particle findings', 'wearFindings', 'Describe wear particles seen', { multiline: true })}
-            {textField('Contamination findings', 'contaminationFindings', 'Describe contamination seen', { multiline: true })}
-            {textField('Discussion of results', 'ferrographyDiscussion', 'Analyst discussion and observations', { multiline: true })}
+            {textField('Machine Condition Recommendations', 'machineConditionRecommendation', 'Describe recommended machine condition actions', { multiline: true })}
+            {textField('Machine Condition Observation', 'machineConditionObservation', 'Describe machine condition observations', { multiline: true })}
           </View>
 
           {message ? (

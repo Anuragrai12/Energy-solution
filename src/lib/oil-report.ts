@@ -52,6 +52,7 @@ export type OilReportData = {
   lubricantCondition: Condition | '';
   wearCondition: Condition | '';
   recommendation: string;
+  oilConditionObservation: string;
   results: Record<string, string>;
   limits: Record<string, string>;
   wpc: string;
@@ -59,6 +60,8 @@ export type OilReportData = {
   ds: string;
   plp: string;
   allowableWpc: string;
+  machineConditionRecommendation: string;
+  machineConditionObservation: string;
   wearFindings: string;
   contaminationFindings: string;
   ferrographyDiscussion: string;
